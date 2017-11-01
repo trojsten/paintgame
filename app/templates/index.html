@@ -1,7 +1,41 @@
 <html>
-    <head>
-        <title>Kresliaca hra</title>
-    </head>
-    <body>
-    </body>
+  <head>
+    <title>Paintgame</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <p id="debug_info1">Here's some debug info.</p>
+    <p id="debug_info2">Here's some debug info2.</p>
+    <p id="debug_info3">Here's some debug info3.</p>
+    <div id="lobby">
+      <div id="player_selection">
+        You're <span id="pid">spectator</span>.
+        <p>
+          <button id="p-1" onclick="requestPlayerChange(-1)">Spectate</button>
+          {% for pid in range(form.num_players) %}
+            <button id="p{{ pid }}" onclick="requestPlayerChange({{ pid }})">{{ pid }}</button>
+          {% endfor %}
+        </p>
+      </div>
+      <div id="cursor_controls">
+        <p>
+          {% for cid in range(form.num_cursors) %}
+            Cursor {{ cid }} ({{ form.color_of(cid).r }}, {{ form.color_of(cid).g }}, {{ form.color_of(cid).b }})
+            <button id="l{{ cid }}" onclick="bind({{ cid }}, 'l')"></button>
+            <button id="s{{ cid }}" onclick="bind({{ cid }}, 's')"></button>
+            <button id="r{{ cid }}" onclick="bind({{ cid }}, 'r')"></button>
+            <br>
+          {% endfor %}
+        </p>
+        <p>
+          <input id="cfg_name" type="text">
+          <button id="save_cfg">save</button>
+          <button id="load_cfg">load</button>
+        </p>
+      </div>
+    </div>
+    <script type="text/javascript" src="/static/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="/static/socket.io.js"></script>
+    <script type="text/javascript" src="/static/paint.js"></script>
+  </body>
 </html>

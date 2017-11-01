@@ -58,3 +58,7 @@ class GameEncoder(json.JSONEncoder):
     
     # Let the base class default method raise the TypeError
     return json.JSONEncoder.default(self, obj)
+
+def encode(obj):
+  """Returns a json representation of the object."""
+  return json.dumps(obj, cls = GameEncoder)
