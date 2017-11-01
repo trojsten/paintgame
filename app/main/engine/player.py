@@ -1,5 +1,6 @@
 import random
 from pygame import Surface
+from .cursor import Cursor
 
 class Team:
   def __init__(self, tid):
@@ -31,10 +32,12 @@ class Player:
     for i in range(game.form.num_cursors):
       color = game.form.color_of(i)
       width = game.form.cursor_width
+      move_speed = game.form.cursor_move_speed
+      angle_speed = game.form.cursor_angle_speed
       x = random.uniform(self.area.left, self.area.right)
       y = random.uniform(self.area.top, self.area.bottom)
       direction = random.random()
-      cursors.append(Cursor(color, width, (x, y), direction, self.game.canvas))
+      self.cursors.append(Cursor(color, width, move_speed, angle_speed, (x, y), direction, self.game.canvas))
     
     self.score = 0.0
     self.team = game.teams[game.form.team_of(pid)]
