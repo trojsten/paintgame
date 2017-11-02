@@ -4,6 +4,35 @@ from . import globs
 from .engine.writer import encode
 from .. import socketio
 
+def is_free(i):
+  if i == -1:
+    return True
+  if i in range(len(globs.seats)):
+    return not globs.seats[i]
+  return False
+
+def is_taken(i):
+  return not is_free(i)
+
+def free_seat(i):
+  if i in range(len(globs.seats)):
+    del session["player"]
+    globs.seats[i] = False
+    socketio.emit("free_seat", i)
+
+def take_seat(i):
+  if i in range(len(globs.seats)):
+    session["player"] = i
+    globs.seats[i] = True
+    socketio.emit("take_seat", i)
+
+@socketio.on("disconnect", namespace = "/")
+def disconnected():
+  """Someone disconnected. If it was a player, free the seat."""
+  player = session.get("player")
+  if player != None:
+    free_seat(player)
+
 @socketio.on("joined", namespace = "/")
 def joined():
   """
@@ -17,8 +46,14 @@ def joined():
 @socketio.on("request_player_change", namespace = "/")
 def request_pc(nplayer):
   """Player wants to change seats. Is it free?"""
-  if nplayer >= 0 and nplayer < globs.game.form.num_players:
+  if is_free(nplayer):
+    player = session.get("player")
+    if player != None:
+      free_seat(player)
+    take_seat(nplayer)
     emit("confirmed_player_change", nplayer)
+  else:
+    emit("declined_player_change")
 
 @socketio.on("save_cfg", namespace = "/")
 def save_cfg(name, cursors):

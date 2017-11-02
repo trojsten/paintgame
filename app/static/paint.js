@@ -20,12 +20,10 @@ var cursors = [{"l": 81, "s": 65, "r": 90},
 var format;
 var seats;
 
+// Seat changing.
 function requestPlayerChange(nplayer) {
   info("requesting player change " + nplayer.toString());
   socket.emit("request_player_change", nplayer);
-  if (nplayer == -1) {
-    confirmedPlayerChange(-1);
-  }
 }
 function confirmedPlayerChange(nplayer) {
   info("confirmed player change " + nplayer.toString());
@@ -39,7 +37,14 @@ function confirmedPlayerChange(nplayer) {
     $("#cursor_controls").show();
   }
 }
+function freeSeat(i) {
+  $("#p" + i.toString()).html(i.toString());
+}
+function takeSeat(i) {
+  $("#p" + i.toString()).html("TAKEN");
+}
 
+// Cursor controls changing.
 function refreshCursorButt(cid, type) {
   var key = cursors[cid][type];
   $("#" + type + cid.toString()).html(dirToWord[type] + " = " + key.toString());
@@ -56,7 +61,6 @@ function bind(cid, type) {
     $(window).off("keydown");
   });
 }
-
 function save_cfg() {
   var name = $("#cfg_name").val();
   socket.emit("save_cfg", name, cursors);
@@ -66,10 +70,10 @@ function load_cfg() {
   socket.emit("load_cfg", name);
 }
 
+// Startup: stuff that needs to run with something in mind.
 $(function() {
   info("done loading page, gonna do some javascript");
   
-  // Socket startup
   socket = io();
   socket.on("connect", function() {
     socket.emit("joined");
@@ -78,12 +82,28 @@ $(function() {
     info("got a welcome from server");
     format = JSON.parse(data.format);
     seats = JSON.parse(data.seats);
+    for (var i = 0; i < seats.length; i++) {
+      if (seats[i]) {
+        takeSeat(i);
+      }
+    }
   });
   
-  // Lobby events: player change, config load
+  // Lobby events: player changes
   socket.on("confirmed_player_change", function(data) {
     confirmedPlayerChange(data);
   });
+  socket.on("declined_player_change", function() {
+    info("request for player change declined");
+  });
+  socket.on("free_seat", function(data) {
+    freeSeat(data);
+  });
+  socket.on("take_seat", function(data) {
+    takeSeat(data);
+  });
+  
+  // Lobby events: config load and save
   socket.on("config_not_exist", function() {
     info("Config file with the given name does not exist.");
   });
