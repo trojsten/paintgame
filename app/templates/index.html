@@ -4,9 +4,7 @@
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
-    <p id="debug_info1">Here's some debug info.</p>
-    <p id="debug_info2">Here's some debug info2.</p>
-    <p id="debug_info3">Here's some debug info3.</p>
+    <p><textarea id="log" cols="80" rows="20"></textarea></p>
     <div id="lobby">
       <div id="player_selection">
         You're <span id="pid">spectator</span>.
@@ -29,8 +27,8 @@
         </p>
         <p>
           <input id="cfg_name" type="text">
-          <button id="save_cfg">save</button>
-          <button id="load_cfg">load</button>
+          <button id="save_cfg" onclick="save_cfg()">save</button>
+          <button id="load_cfg" onclick="load_cfg()">load</button>
         </p>
       </div>
     </div>

@@ -1,27 +1,7 @@
-/*
-function write(msg) {
-  $("#something").text(msg);
-}
-$(function() {
-  var socket = io();
-  socket.on("connect", function() {
-    socket.emit("joined", {});
-  });
-  var format;
-  var seats;
-  socket.on("welcome", function(data) {
-    format = JSON.parse(data.format);
-    seats = JSON.parse(data.seats);
-    write("Welcome.");
-  });
-  socket.on("start", function() {
-    write("START!");
-  });
-});
-*/
-
-function info(msg, i = 1) {
-  $("#debug_info" + i.toString()).text(msg);
+function info(msg) {
+  $("#log").append(msg);
+  $("#log").append("\n");
+  $("#log").scrollTop($("#log")[0].scrollHeight);
 }
 
 var socket;
@@ -79,11 +59,17 @@ function bind(cid, type) {
 
 function save_cfg() {
   var name = $("#cfg_name").val();
+  socket.emit("save_cfg", name, cursors);
+}
+function load_cfg() {
+  var name = $("#cfg_name").val();
+  socket.emit("load_cfg", name);
 }
 
 $(function() {
   info("done loading page, gonna do some javascript");
   
+  // Socket startup
   socket = io();
   socket.on("connect", function() {
     socket.emit("joined");
@@ -93,8 +79,28 @@ $(function() {
     format = JSON.parse(data.format);
     seats = JSON.parse(data.seats);
   });
+  
+  // Lobby events: player change, config load
   socket.on("confirmed_player_change", function(data) {
     confirmedPlayerChange(data);
+  });
+  socket.on("config_not_exist", function() {
+    info("Config file with the given name does not exist.");
+  });
+  socket.on("config_name_taken", function() {
+    info("Config file with the given name already exists.");
+  });
+  socket.on("save_cfg_success", function() {
+    info("Successfully saved config.");
+  });
+  socket.on("cfg", function(data) {
+    info("Successfully loaded config.");
+    cursors = data;
+    for (var cid = 0; cid < cursors.length; cid++) {
+      for (type in cursors[cid]) {
+        refreshCursorButt(cid, type);
+      }
+    }
   });
   
   // Set names for cursor control buttons.
