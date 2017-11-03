@@ -15,22 +15,23 @@ class StandardFormat:
   """
   
   def __init__(self):
-    self.canvas_size = (1360, 768)
+    self.canvas_size = (1440, 720)
     self.image_files = ["{}.bmp".format(i) for i in range(5)]
     
     self.images = []
     for name in self.image_files:
       location = os.path.join(ancestor(__file__, 3), "static/images", name)
-      img = transform.scale(image.load(location), (340, 256))
+      img = transform.scale(image.load(location), (330, 220))
       self.images.append(img)
     
     self.bg_color = Color("white")
     self.num_players = 12
     self.num_cursors = 5
     self.num_teams = 4
-    self.cursor_move_speed = 1.0
-    self.cursor_angle_speed = 0.025
+    self.cursor_move_speed = 0.25
+    self.cursor_angle_speed = 0.05
     self.cursor_width = 10
+    self.color_names = ["red", "green", "blue", "yellow", "black"]
   
   def team_of(self, player):
     return player // 3
@@ -38,9 +39,7 @@ class StandardFormat:
   def area_of(self, player):
     r = player // 4
     c = player % 4
-    return Rect(c * 340, r * 256, 340, 256)
+    return Rect(c * 360 + 15, r * 240 + 10, 330, 220)
   
   def color_of(self, cursor):
-    if cursor < 3:
-      return Color("black")
-    return Color("white")
+    return Color(self.color_names[cursor])

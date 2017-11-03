@@ -4,10 +4,15 @@
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
-    <p><textarea id="log" cols="80" rows="20"></textarea></p>
-    <div id="lobby">
+    <div id="debug" class="center">
+      <textarea id="log" cols="80" rows="10"></textarea>
+    </div>
+    <div id="lobby" class="center">
+      <div id="format_description">
+        <canvas id="fcanvas" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
+      </div>
       <div id="player_selection">
-        You're <span id="pid">spectator</span>.
+        <p>You're <span id="pid">spectator</span>.</p>
         <p>
           <button id="p-1" onclick="requestPlayerChange(-1)">Spectate</button>
           {% for pid in range(form.num_players) %}
@@ -18,7 +23,7 @@
       <div id="controls">
         <p>
           {% for cid in range(form.num_cursors) %}
-            Cursor {{ cid }} ({{ form.color_of(cid).r }}, {{ form.color_of(cid).g }}, {{ form.color_of(cid).b }})
+            <span style="color:rgb({{ form.color_of(cid).r }}, {{ form.color_of(cid).g }}, {{ form.color_of(cid).b }})">Cursor {{ cid }}</span>
             <button id="l{{ cid }}" onclick="bind({{ cid }}, 'l')"></button>
             <button id="s{{ cid }}" onclick="bind({{ cid }}, 's')"></button>
             <button id="r{{ cid }}" onclick="bind({{ cid }}, 'r')"></button>
@@ -34,8 +39,9 @@
       </div>
     </div>
     <div id="game">
-      <canvas id="canvas" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
-      <canvas id="pcanvas" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
+      <canvas id="canvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
+      <canvas id="pcanvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
+      <canvas id="scanvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
     </div>
     <div id="secret">
       <!--This is not visible to the client, we use it to send data conveniently. -->

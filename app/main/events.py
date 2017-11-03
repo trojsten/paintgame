@@ -59,12 +59,12 @@ def request_pc(nplayer):
     emit("declined_player_change")
 
 @socketio.on("save_cfg", namespace = "/")
-def save_cfg(name, cursors):
+def save_cfg(name, cursors, finisher):
   """Save cursor controls for later retrieval."""
   if name in globs.configs:
     emit("config_name_taken")
   else:
-    globs.configs[name] = cursors
+    globs.configs[name] = {"cursors": cursors, "finisher": finisher}
     emit("save_cfg_success")
 
 @socketio.on("load_cfg", namespace = "/")
@@ -82,12 +82,6 @@ def action(data):
   pid = session.get("player")
   if pid not in range(globs.game.form.num_players):
     return
-  last_act = session.get("last_action_at")
-  hlen = len(globs.history)
-  if last_act:
-    if last_act == hlen:
-      return
-  session["last_action_at"] = hlen
   if data.get("type") == "cursor":
     cid = data.get("cursor")
     command = data.get("command")

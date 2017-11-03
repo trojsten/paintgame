@@ -9,12 +9,13 @@ canvas = display.set_mode(form.canvas_size)
 game = Game(form, canvas)
 
 while True:
-  sleep(0.01)
-  game.step()
+  sleep(0.05)
+  for i in range(10):
+    game.step()
   display.flip()
-  if random.random() < 0.5:
-    for pid in range(form.num_players):
-      for cid in range(form.num_cursors):
+  for pid in range(form.num_players):
+    for cid in range(form.num_cursors):
+      if random.random() < 0.5:
         game.steer(pid, cid, ('L' if (pid + cid) % 2 == 0 else 'R'))
   if random.random() < 0.01:
     for pid in range(form.num_players):

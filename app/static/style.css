@@ -1,4 +1,12 @@
-#cursor_controls {
+.center {
+  text-align: center;
+}
+
+#fcanvas {
+  max-width: 25vw;
+  max-height: 25vh;
+}
+#controls {
   display: none;
 }
 
@@ -6,23 +14,21 @@
   position: relative;
   display: none;
 }
-
-#canvas {
+.layer {
   position: absolute;
   left: 0;
   top: 0;
-  z-index: 0;
   max-width: 100vw;
   max-height: 100vh;
 }
-
+#canvas {
+  z-index: 0;
+}
 #pcanvas {
-  position: absolute;
-  left: 0;
-  top: 0;
   z-index: 1;
-  max-width: 100vw;
-  max-height: 100vh;
+}
+#scanvas {
+  z-index: 2;
 }
 
 #secret {

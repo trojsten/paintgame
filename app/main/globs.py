@@ -28,13 +28,13 @@ def start():
   starting_data = encode(game)
   with history_lock:
     history.append(starting_data)
-    socketio.emit("start", history, namespace = "/")
-  game_thread = threading.Timer(0.05, step)
+    socketio.emit("get_ready", history, namespace = "/")
+  game_thread = threading.Timer(3, step)
   game_thread.start()
 
 def send_history():
   with history_lock:
-    emit("start", history, namespace = "/")
+    emit("get_ready", history, namespace = "/")
 
 def step():
   with game_lock:
@@ -52,10 +52,8 @@ def action(pid, cid, command):
     if cid in range(game.form.num_cursors):
       with game_lock:
         game.players[pid].cursors[cid].action = command
-        session["last_action_at"] = len(history)
 
 def finish(pid):
   if pid in range(game.form.num_players):
     with game_lock:
       game.players[pid].action = 'D'
-      session["last_action_at"] = len(history)

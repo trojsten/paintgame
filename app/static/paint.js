@@ -21,6 +21,30 @@ var finisher = 13;
 var format;
 var seats;
 
+// Format paint: where is each player and what team he belongs to,
+// and other stuff that needs data from format to be painted.
+var teamColors = ["red", "green", "blue", "purple"];
+function fpaint() {
+  var fcanvas = $("#fcanvas")[0];
+  var fctx = fcanvas.getContext("2d");
+  fctx.fillStyle = "black";
+  for (var pid = 0; pid < format.num_players; pid++) {
+    var rect = format.area_of[pid];
+    var fontsize = Math.min(0.5*rect[2], 0.5*rect[3]);
+    var fw = format.cursor_width;
+    fctx.font = fontsize.toString() + "px Georgia";
+    fctx.fillText(pid.toString(), rect[0] + rect[2]/2, rect[1] + rect[3]/2);
+    fctx.strokeStyle = teamColors[format.team_of[pid]];
+    fctx.lineWidth = fw;
+    fctx.beginPath();
+    fctx.rect(rect[0] + fw/2, rect[1] + fw/2, rect[2] - fw, rect[3] - fw);
+    fctx.stroke();
+  }
+  for (var tid = 0; tid < format.num_teams; tid++) {
+    $("#team" + tid.toString()).css("background-color", teamColors[tid]);
+  }
+}
+
 // Seat changing.
 function requestPlayerChange(nplayer) {
   info("requesting player change " + nplayer.toString());
@@ -48,7 +72,7 @@ function takeSeat(i) {
 // Cursor controls changing.
 function refreshCursorButt(cid, type) {
   var key = cursors[cid][type];
-  $("#" + type + cid.toString()).html(dirToWord[type] + " = " + key.toString());
+  $("#" + type + cid.toString()).html(dirToWord[type] + " = " + String.fromCharCode(key));
 }
 var curr_bind = -1;
 function bind(cid, type) {
@@ -57,20 +81,20 @@ function bind(cid, type) {
   curr_bind = cid;
   $(window).on("keydown", function(event) {
     info("win keydown " + type);
-    cursors[curr_bind][type] = event.which;
+    cursors[curr_bind][type] = event.which || event.keyCode;
     refreshCursorButt(curr_bind, type);
     $(window).off("keydown");
   });
 }
 function refreshFinishButt() {
-  $("#finish").html("finish current quest = " + finisher.toString());
+  $("#finish").html("finish current quest = " + String.fromCharCode(finisher));
 }
 function bind_finish() {
   info("bind_finish");
   $(window).off("keydown");
   $(window).on("keydown", function(event) {
     info("win keydown finish");
-    finisher = event.which;
+    finisher = event.which || event.keyCode;
     refreshFinishButt();
     $(window).off("keydown");
   });
@@ -78,7 +102,7 @@ function bind_finish() {
 function save_cfg() {
   info("requesting save cfg");
   var name = $("#cfg_name").val();
-  socket.emit("save_cfg", name, cursors);
+  socket.emit("save_cfg", name, cursors, finisher);
 }
 function load_cfg() {
   info("requesting load cfg");
@@ -108,19 +132,27 @@ function drawQuest(q, rect) {
   var oldAlpha = pctx.globalAlpha;
   pctx.globalAlpha = 0.2;
   var img = $("#img" + q.toString())[0];
-  var ratio = Math.min(rect[2]/img.width, rect[3]/img.height);
-  pctx.drawImage(img, rect[0], rect[1], ratio*img.width, ratio*img.height);
+  // var ratio = Math.min(rect[2]/img.width, rect[3]/img.height);
+  // pctx.drawImage(img, rect[0], rect[1], ratio*img.width, ratio*img.height);
+  pctx.drawImage(img, rect[0], rect[1], rect[2], rect[3]);
   pctx.globalAlpha = oldAlpha;
 }
 
-function paintPatterns(state) {
-  // Paints the first patterns. Don't use when changing patterns,
-  // as it doesn't clear the area.
+function paintAreas(state) {
+  // Paints the first patterns, and surrounding colored rectangles which
+  // denote which team's area it is.
   for (var pid = 0; pid < format.num_players; pid++) {
     var q = state.players[pid].current_quest;
+    var rect = format.area_of[pid];
     if (q < format.image_files.length) {
-      drawQuest(q, format.area_of[pid]);
+      drawQuest(q, rect);
     }
+    pctx.strokeStyle = teamColors[format.team_of[pid]];
+    var fw = 2;
+    pctx.lineWidth = fw;
+    pctx.beginPath();
+    pctx.rect(rect[0] - fw/2, rect[1] - fw/2, rect[2] + fw, rect[3] + fw);
+    pctx.stroke();
   }
 }
 function paint(state, nstate) {
@@ -140,18 +172,6 @@ function paint(state, nstate) {
   // Cursors leave behind a trail.
   for (var pid = 0; pid < format.num_players; pid++) {
     for (var cid = 0; cid < format.num_cursors; cid++) {
-      /*
-      // Too slow of a method.
-      for (var step = 1; step <= 10; step++) {
-        var ratio = step/10;
-        var cx = between(state.players[pid].cursors[cid].x, nstate.players[pid].cursors[cid].x, ratio);
-        var cy = between(state.players[pid].cursors[cid].y, nstate.players[pid].cursors[cid].y, ratio);
-        ctx.beginPath();
-        ctx.arc(cx, cy, format.cursor_width/2, 0, 2*Math.PI);
-        ctx.fillStyle = colorToStr(format.color_of[cid]);
-        ctx.fill();
-      }
-      */
       ctx.lineWidth = format.cursor_width;
       ctx.lineCap = "round";
       ctx.strokeStyle = colorToStr(format.color_of[cid]);
@@ -163,10 +183,13 @@ function paint(state, nstate) {
   }
   // Move the cursor sprites.
 }
+function paintScores(state) {
+}
 
+var keyAction = [];
+var pressedKeys = {};
 function setKeyBindings() {
   info("setting key bindings");
-  var keyAction = [];
   for (var cid = 0; cid < cursors.length; cid++) {
     for (dir in cursors[cid]) {
       var key = cursors[cid][dir];
@@ -175,19 +198,17 @@ function setKeyBindings() {
   }
   keyAction[finisher] = {"type": "finisher"};
   $(window).on("keydown", function(event) {
-    var action = keyAction[event.which];
-    if (action) {
-      info("user pressed a valid key");
-      info(JSON.stringify(action));
-      socket.emit("action", action);
-    }
+    pressedKeys[event.which || event.keyCode] = true;
+  });
+  $(window).on("keyup", function(event) {
+    delete pressedKeys[event.which || event.keyCode];
   });
 }
 
 $(function() {
   info("done loading page, gonna do some javascript");
   
-  // Set names for cursor control buttons.
+  // Visual stuff: set names for control buttons.
   for (var cid = 0; cid < cursors.length; cid++) {
     for (type in dirToWord) {
       refreshCursorButt(cid, type);
@@ -209,6 +230,7 @@ $(function() {
   socket.on("welcome", function(data) {
     info("got a welcome from server");
     format = JSON.parse(data.format);
+    fpaint();
     seats = JSON.parse(data.seats);
     for (var i = 0; i < seats.length; i++) {
       if (seats[i]) {
@@ -241,20 +263,29 @@ $(function() {
   });
   socket.on("cfg", function(data) {
     info("Successfully loaded config.");
-    cursors = data;
+    cursors = data.cursors;
     for (var cid = 0; cid < cursors.length; cid++) {
       for (type in cursors[cid]) {
         refreshCursorButt(cid, type);
       }
     }
+    finisher = data.finisher;
+    refreshFinishButt();
   });
   // Lobby event: game start
-  socket.on("start", function(data) {
+  socket.on("get_ready", function(data) {
     info("starting the game");
     socket.on("update", function(data) {
       var nstate = JSON.parse(data);
       paint(game, nstate);
+      paintScores(nstate);
       game = nstate;
+      for (key in pressedKeys) {
+        var action = keyAction[key];
+        if (action) {
+          socket.emit("action", action);
+        }
+      }
     });
     var updates = [];
     for (var i = 0; i < data.length; i++) {
@@ -264,8 +295,9 @@ $(function() {
       paint(updates[i], updates[i + 1]);
     }
     game = updates[updates.length - 1];
-    paintPatterns(game);
+    paintAreas(game);
     setKeyBindings();
+    $("#log").hide();
     $("#lobby").hide();
     $("#game").show();
   });
