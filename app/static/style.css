@@ -11,15 +11,15 @@
 }
 
 #game {
-  position: relative;
   display: none;
+  position: relative;
 }
 .layer {
   position: absolute;
   left: 0;
   top: 0;
   max-width: 100vw;
-  max-height: 100vh;
+  max-height: 95vh;
 }
 #canvas {
   z-index: 0;

@@ -38,14 +38,14 @@ def send_history():
 
 def step():
   with game_lock:
-    for i in range(10):
-      game.step()
-  update_data = encode(game)
-  with history_lock:
-    history.append(update_data)
-  socketio.emit("update", update_data, namespace = "/")
-  game_thread = threading.Timer(0.05, step)
-  game_thread.start()
+    not_done = game.step()
+  if not_done:
+    update_data = encode(game)
+    with history_lock:
+      history.append(update_data)
+    socketio.emit("update", update_data, namespace = "/")
+    game_thread = threading.Timer(0.05, step)
+    game_thread.start()
 
 def action(pid, cid, command):
   if pid in range(game.form.num_players):

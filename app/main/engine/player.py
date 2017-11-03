@@ -44,17 +44,25 @@ class Player:
     self.current_quest = 0
     self.artworks = []
     self.action = 'N' # 'N'one, quest 'D'one and move to the next quest
+    self.cooldown = 0
   
   def step(self):
     """Clear the area and score points if action is 'D'. Move cursors."""
-    if self.action == 'D':
-      if self.current_quest < len(self.game.form.images):
-        model = self.game.form.images[self.current_quest]
-        artwork = self.game.canvas.subsurface(self.area).copy()
-        self.score += score(artwork, model, self.game.form.bg_color)
-        self.artworks.append(artwork)
-        # self.game.canvas.fill(self.game.form.bg_color, self.area)
-        self.current_quest += 1
-      self.action = 'N'
+    if self.cooldown <= 0.0:
+      if self.action == 'D':
+        if self.current_quest < len(self.game.form.images):
+          model = self.game.form.images[self.current_quest]
+          artwork = self.game.canvas.subsurface(self.area).copy()
+          self.artworks.append(artwork)
+          
+          points = score(artwork, model, self.game.form.bg_color)
+          self.score += points
+          self.team.score += points
+          # self.game.canvas.fill(self.game.form.bg_color, self.area)
+          self.current_quest += 1
+          self.cooldown = self.game.form.cooldown
+    else:
+      self.cooldown -= 1.0/self.game.form.granularity
+    self.action = 'N'
     for c in self.cursors:
       c.step()

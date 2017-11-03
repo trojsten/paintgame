@@ -16,6 +16,7 @@ class Game:
     self.form = form
     self.teams = [Team(i) for i in range(form.num_teams)]
     self.players = [Player(i, self) for i in range(form.num_players)]
+    self.rounds = form.rounds
   
   def clear(self, pid):
     """Player <pid> wants to clear his area and score points."""
@@ -27,5 +28,10 @@ class Game:
 
   def step(self):
     """Advance the game state."""
-    for player in self.players:
-      player.step()
+    if self.rounds > 0:
+      for i in range(self.form.granularity):
+        for player in self.players:
+          player.step()
+      self.rounds -= 1
+      return True
+    return False

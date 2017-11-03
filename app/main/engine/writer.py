@@ -22,6 +22,7 @@ def form_def(form):
   res["area_of"] = [rect_to_json(form.area_of(pid)) for pid in range(form.num_players)]
   res["color_of"] = [color_to_json(form.color_of(cid)) for cid in range(form.num_cursors)]
   res["cursor_width"] = form.cursor_width
+  res["rounds"] = form.rounds
   return res
 
 def cursor_update(cursor):
@@ -37,7 +38,7 @@ def player_update(player):
 def game_update(game):
   teams = [team_update(t) for t in game.teams]
   players = [player_update(p) for p in game.players]
-  return {"teams": teams, "players": players}
+  return {"teams": teams, "players": players, "rounds": game.rounds}
 
 class GameEncoder(json.JSONEncoder):
   """

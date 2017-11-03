@@ -21,9 +21,8 @@ var finisher = 13;
 var format;
 var seats;
 
-// Format paint: where is each player and what team he belongs to,
-// and other stuff that needs data from format to be painted.
-var teamColors = ["red", "green", "blue", "purple"];
+// Format paint: where is each player and what team he belongs to.
+var teamColors = ["orange", "brown", "cyan", "pink"];
 function fpaint() {
   var fcanvas = $("#fcanvas")[0];
   var fctx = fcanvas.getContext("2d");
@@ -39,9 +38,6 @@ function fpaint() {
     fctx.beginPath();
     fctx.rect(rect[0] + fw/2, rect[1] + fw/2, rect[2] - fw, rect[3] - fw);
     fctx.stroke();
-  }
-  for (var tid = 0; tid < format.num_teams; tid++) {
-    $("#team" + tid.toString()).css("background-color", teamColors[tid]);
   }
 }
 
@@ -118,6 +114,8 @@ var canvas;
 var ctx;
 var pcanvas;
 var pctx;
+var scanvas;
+var sctx;
 
 function between(x, nx, ratio) {
   return ratio*x + (1.0-ratio)*nx;
@@ -180,10 +178,71 @@ function paint(state, nstate) {
       ctx.lineTo(nstate.players[pid].cursors[cid].x, nstate.players[pid].cursors[cid].y);
       ctx.stroke();
     }
+  }  
+}
+function paintSprites(state) {
+  // At each cursor's location, draw a triangle depicting direction, and
+  // with colors corresponding to the owner's team and the cursor's color.
+  sctx.clearRect(0, 0, scanvas.width, scanvas.height);
+  for (var pid = 0; pid < format.num_players; pid++) {
+    for (var cid = 0; cid < format.num_cursors; cid++) {
+      var cursor = state.players[pid].cursors[cid];
+      var unit = format.cursor_width;
+      var dx1 = 1.5 * unit * Math.cos(cursor.direction * 2 * Math.PI);
+      var dy1 = 1.5 * unit * Math.sin(cursor.direction * 2 * Math.PI);
+      var dx2 = 0.75 * unit * Math.cos((cursor.direction + 1/3) * 2 * Math.PI);
+      var dy2 = 0.75 * unit * Math.sin((cursor.direction + 1/3) * 2 * Math.PI);
+      var dx3 = 0.75 * unit * Math.cos((cursor.direction + 2/3) * 2 * Math.PI);
+      var dy3 = 0.75 * unit * Math.sin((cursor.direction + 2/3) * 2 * Math.PI);
+      sctx.fillStyle = teamColors[format.team_of[pid]];
+      sctx.moveTo(cursor.x + dx1, cursor.y + dy1);
+      sctx.beginPath();
+      sctx.lineTo(cursor.x + dx2, cursor.y + dy2);
+      sctx.lineTo(cursor.x + dx3, cursor.y + dy3);
+      sctx.lineTo(cursor.x + dx1, cursor.y + dy1);
+      sctx.fill();
+    }
   }
-  // Move the cursor sprites.
+}
+function paintTime(state) {
+  // Draw the timebar (black bar in the lower part of the screen).
+  var timebar_h = 0.08*(canvas.height - format.canvas_size[1]);
+  var timebar_w = format.canvas_size[0] * game.rounds/format.rounds;
+  ctx.clearRect(0, format.canvas_size[1], format.canvas_size[0], timebar_h);
+  ctx.fillStyle = "black";
+  ctx.beginPath();
+  ctx.rect(0, format.canvas_size[1], timebar_w, timebar_h);
+  ctx.fill();
 }
 function paintScores(state) {
+  // Draw the scorebars.
+  var extra_h = (canvas.height - format.canvas_size[1]);
+  var timebar_h = 0.08*extra_h;
+  var scorebar_h = 0.23*extra_h;
+  var maxscore = 0.000000001;
+  for (var tid = 0; tid < format.num_teams; tid++) {
+    maxscore = Math.max(game.teams[tid].score, maxscore);
+  }
+  ctx.clearRect(0, format.canvas_size[1]+timebar_h, format.canvas_size[0], 4*scorebar_h);
+  for (var tid = 0; tid < format.num_teams; tid++) {
+    var start_h = format.canvas_size[1] + timebar_h + tid*scorebar_h;
+    var scorebar_w = format.canvas_size[0] * game.teams[tid].score/maxscore;
+    ctx.fillStyle = teamColors[tid];
+    ctx.beginPath();
+    ctx.rect(0, start_h, scorebar_w, scorebar_h);
+    ctx.fill();
+    ctx.font = scorebar_h.toString() + "px Georgia";
+    ctx.fillStyle = "black";
+    ctx.fillText(game.teams[tid].score.toString(), 0, start_h + scorebar_h);
+  }
+}
+function alertScores(state, nstate) {
+  for (var pid = 0; pid < format.num_players; pid++) {
+    if (nstate.players[pid].current_quest != state.players[pid].current_quest) {
+      var diff = nstate.players[pid].score - state.players[pid].score;
+      
+    }
+  }
 }
 
 var keyAction = [];
@@ -221,6 +280,8 @@ $(function() {
   ctx = canvas.getContext("2d");
   pcanvas = $("#pcanvas")[0];
   pctx = pcanvas.getContext("2d");
+  scanvas = $("#scanvas")[0];
+  sctx = scanvas.getContext("2d");
   
   // Socket stuff.
   socket = io();
@@ -278,7 +339,10 @@ $(function() {
     socket.on("update", function(data) {
       var nstate = JSON.parse(data);
       paint(game, nstate);
+      paintTime(nstate);
       paintScores(nstate);
+      alertScores(game, nstate);
+      paintSprites(nstate);
       game = nstate;
       for (key in pressedKeys) {
         var action = keyAction[key];
@@ -296,6 +360,9 @@ $(function() {
     }
     game = updates[updates.length - 1];
     paintAreas(game);
+    paintTime(game);
+    paintScores(game);
+    paintSprites(game);
     setKeyBindings();
     $("#log").hide();
     $("#lobby").hide();
