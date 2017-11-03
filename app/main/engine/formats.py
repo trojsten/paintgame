@@ -1,6 +1,12 @@
 import os
 from pygame import Color, Surface, Rect, image, transform
 
+def ancestor(location, x):
+  """Helper function to return the directory <x> levels above."""
+  for i in range(x):
+    location = os.path.dirname(location)
+  return location
+
 class StandardFormat:
   """
   12 players, 4 teams of size 3, map size is 1360x768, each player's
@@ -14,7 +20,7 @@ class StandardFormat:
     
     self.images = []
     for name in self.image_files:
-      location = os.path.join(os.path.dirname(__file__), "images", name)
+      location = os.path.join(ancestor(__file__, 3), "static/images", name)
       img = transform.scale(image.load(location), (340, 256))
       self.images.append(img)
     
@@ -22,9 +28,9 @@ class StandardFormat:
     self.num_players = 12
     self.num_cursors = 5
     self.num_teams = 4
-    self.cursor_move_speed = 2.0
-    self.cursor_angle_speed = 0.005
-    self.cursor_width = 10.0
+    self.cursor_move_speed = 1.0
+    self.cursor_angle_speed = 0.025
+    self.cursor_width = 10
   
   def team_of(self, player):
     return player // 3

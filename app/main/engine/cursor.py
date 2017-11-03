@@ -34,7 +34,7 @@ class Cursor:
       self.x = max(0.0, min(self.canvas.get_width(), self.x))
       self.y += self.move_speed * math.sin(self.direction * 2.0 * math.pi)
       self.y = max(0.0, min(self.canvas.get_height(), self.y))
-      draw.circle(self.canvas, self.color, (int(self.x), int(self.y)), int(self.width / 2))
+      draw.circle(self.canvas, self.color, (int(self.x), int(self.y)), self.width // 2)
     if self.action == 'S':
       self.moving = not self.moving
     self.action = 'N'

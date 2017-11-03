@@ -5,7 +5,7 @@ from .player import Team, Player
 from .game import Game
 
 def rect_to_json(rect):
-  return [rect.left, rect.top, rect.right, rect.bottom]
+  return [rect.left, rect.top, rect.width, rect.height]
 
 def color_to_json(color):
   return [color.r, color.g, color.b]
@@ -21,6 +21,7 @@ def form_def(form):
   res["team_of"] = [form.team_of(pid) for pid in range(form.num_players)]
   res["area_of"] = [rect_to_json(form.area_of(pid)) for pid in range(form.num_players)]
   res["color_of"] = [color_to_json(form.color_of(cid)) for cid in range(form.num_cursors)]
+  res["cursor_width"] = form.cursor_width
   return res
 
 def cursor_update(cursor):
@@ -36,7 +37,7 @@ def player_update(player):
 def game_update(game):
   teams = [team_update(t) for t in game.teams]
   players = [player_update(p) for p in game.players]
-  return {"teams": teams, "players": players}  
+  return {"teams": teams, "players": players}
 
 class GameEncoder(json.JSONEncoder):
   """

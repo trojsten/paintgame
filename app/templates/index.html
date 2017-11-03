@@ -15,7 +15,7 @@
           {% endfor %}
         </p>
       </div>
-      <div id="cursor_controls">
+      <div id="controls">
         <p>
           {% for cid in range(form.num_cursors) %}
             Cursor {{ cid }} ({{ form.color_of(cid).r }}, {{ form.color_of(cid).g }}, {{ form.color_of(cid).b }})
@@ -24,6 +24,7 @@
             <button id="r{{ cid }}" onclick="bind({{ cid }}, 'r')"></button>
             <br>
           {% endfor %}
+          <button id="finish" onclick="bind_finish()">finish current quest</button>
         </p>
         <p>
           <input id="cfg_name" type="text">
@@ -31,6 +32,16 @@
           <button id="load_cfg" onclick="load_cfg()">load</button>
         </p>
       </div>
+    </div>
+    <div id="game">
+      <canvas id="canvas" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
+      <canvas id="pcanvas" width="{{ form.canvas_size[0] }}" height="{{ form.canvas_size[1] }}"></canvas>
+    </div>
+    <div id="secret">
+      <!--This is not visible to the client, we use it to send data conveniently. -->
+      {% for name in form.image_files %}
+        <img id="img{{ name[:-4] }}" src="/static/images/{{ name }}">
+      {% endfor %}
     </div>
     <script type="text/javascript" src="/static/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="/static/socket.io.js"></script>

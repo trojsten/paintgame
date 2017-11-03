@@ -1,3 +1,30 @@
 #cursor_controls {
   display: none;
 }
+
+#game {
+  position: relative;
+  display: none;
+}
+
+#canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+#pcanvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+#secret {
+  display: none;
+}

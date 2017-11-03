@@ -1,9 +1,10 @@
 from flask import session
-from flask_socketio import emit, join_room, leave_room
+from flask_socketio import emit
 from . import globs
 from .engine.writer import encode
 from .. import socketio
 
+"""Seat stuff."""
 def is_free(i):
   if i == -1:
     return True
@@ -42,6 +43,8 @@ def joined():
   format_data = encode(globs.game.form)
   seats_data = encode(globs.seats)
   emit("welcome", {"format": format_data, "seats": seats_data})
+  if len(globs.history) > 0:
+    globs.send_history()
 
 @socketio.on("request_player_change", namespace = "/")
 def request_pc(nplayer):
@@ -71,3 +74,23 @@ def load_cfg(name):
     emit("config_not_exist")
   else:
     emit("cfg", globs.configs[name])
+
+
+
+@socketio.on("action", namespace = "/")
+def action(data):
+  pid = session.get("player")
+  if pid not in range(globs.game.form.num_players):
+    return
+  last_act = session.get("last_action_at")
+  hlen = len(globs.history)
+  if last_act:
+    if last_act == hlen:
+      return
+  session["last_action_at"] = hlen
+  if data.get("type") == "cursor":
+    cid = data.get("cursor")
+    command = data.get("command")
+    globs.action(pid, cid, command)
+  else:
+    globs.finish(pid)

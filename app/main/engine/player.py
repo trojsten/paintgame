@@ -53,7 +53,7 @@ class Player:
         artwork = self.game.canvas.subsurface(self.area).copy()
         self.score += score(artwork, model, self.game.form.bg_color)
         self.artworks.append(artwork)
-        self.game.canvas.fill(self.game.form.bg_color, self.area)
+        # self.game.canvas.fill(self.game.form.bg_color, self.area)
         self.current_quest += 1
       self.action = 'N'
     for c in self.cursors:

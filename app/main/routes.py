@@ -14,12 +14,16 @@ def admin():
   The whole purpose of the page is to enable starting the game
   at a qualified person's will.
   """
+  globs.start()
+  return redirect(url_for('.index'))
+  """
   msg = ""
   form = PasswordForm()
   if form.validate_on_submit():
     # Do not do password validation in a serious application this way, please.
     if form.password.data == "abrakadabra":
-      socketio.emit("start", namespace = "/")
+      globs.start()
       return redirect(url_for('.index'))
     msg = "Wrong password."
   return render_template("admin.html", form = form, message = msg)
+  """
