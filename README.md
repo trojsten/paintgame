@@ -44,6 +44,11 @@ them on the server side for later use. Just click on the action whose
 key binding you want to change, and then press the key corresponding to
 the new binding.
 
+For each pen, we will give its default controls in the format (`key_left`,
+`key_right`). Pen 1: (`1`, `Q`), pen 2: (`Z`, `X`), pen 3: (`V`, `B`),
+pen 4: (`<`, `>`), pen 5: (`num6`, `num9`). You can finish the current
+quest `Enter`.
+
 ## Game
 
 The playing field is a large canvas. Each player has a scoring area
