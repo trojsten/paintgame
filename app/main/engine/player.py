@@ -15,7 +15,7 @@ def score(artwork, model, bg_color):
       on_bg = (1 if model.get_at((x, y)) == bg_color else 0)
       match = (1 if artwork.get_at((x, y)) == model.get_at((x, y)) else 0)
       num[on_bg][match] += 1
-  return num[0][1] / (num[0][1] + num[1][0] + num[0][0])
+  return float(num[1][1] + num[0][1]) / float(num[0][1] + num[1][0] + num[0][0] + num[1][1])
 
 class Player:
   """

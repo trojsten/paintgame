@@ -1,6 +1,7 @@
-import threading
+import threading, os, json, pygame, datetime
 from flask import session
 from flask_socketio import emit
+from . import utility
 from .engine.game import Game
 from .engine.formats import StandardFormat
 from .engine.writer import encode
@@ -15,6 +16,15 @@ game = Game(StandardFormat())
 seats = [False] * game.form.num_players
 history = []
 configs = {}
+
+# Load configs that are saved on the disk.
+cfg_path = os.path.join(utility.ancestor(__file__, 2), "configs")
+for name in os.listdir(cfg_path):
+  f_path = os.path.join(cfg_path, name)
+  if not os.path.isfile(f_path):
+    continue
+  with open(f_path, "r") as f:
+    configs[name] = json.load(f)
 
 """
 The game engine runs as a background thread. What follows is the
@@ -46,6 +56,19 @@ def step():
     socketio.emit("update", update_data, namespace = "/")
     game_thread = threading.Timer(0.05, step)
     game_thread.start()
+  else:
+    # Save artworks to the disk.
+    game_folder = str(datetime.datetime.now())
+    art_path = os.path.join(utility.ancestor(__file__, 2), "artworks", game_folder)
+    if not os.path.exists(art_path):
+      os.makedirs(art_path)
+    for pid in range(game.form.num_players):
+      p_path = os.path.join(art_path, str(pid))
+      if not os.path.exists(p_path):
+        os.makedirs(p_path)
+      for i in range(len(game.players[pid].artworks)):
+        img_path = os.path.join(p_path, "{}.bmp".format(i))
+        pygame.image.save(game.players[pid].artworks[i], img_path)
 
 def action(pid, cid, command):
   if pid in range(game.form.num_players):

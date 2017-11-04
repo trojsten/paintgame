@@ -1,6 +1,7 @@
+import json, os
 from flask import session
 from flask_socketio import emit
-from . import globs
+from . import globs, utility
 from .engine.writer import encode
 from .. import socketio
 
@@ -65,6 +66,9 @@ def save_cfg(name, cursors, finisher):
     emit("config_name_taken")
   else:
     globs.configs[name] = {"cursors": cursors, "finisher": finisher}
+    fname = os.path.join(utility.ancestor(__file__, 2), "configs", name)
+    with open(fname, "w") as cfg:
+      json.dump(globs.configs[name], cfg)
     emit("save_cfg_success")
 
 @socketio.on("load_cfg", namespace = "/")

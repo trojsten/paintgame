@@ -30,6 +30,9 @@
 #scanvas {
   z-index: 2;
 }
+#popcanvas {
+  z-index: 2;
+}
 
 #secret {
   display: none;

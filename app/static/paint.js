@@ -7,16 +7,16 @@ function info(msg) {
 var socket;
 
 // Helper vars.
-var dirToWord = {"l": "left", "s": "stop", "r": "right"};
+var dirToWord = {"l": "left", "r": "right"};
 
 // Default values for vars:
 // player = spectator, cursor default controls.
 var player = -1;
-var cursors = [{"l": 81, "s": 65, "r": 90},
-              {"l": 87, "s": 69, "r": 82},
-              {"l": 89, "s": 85, "r": 73},
-              {"l": 80, "s": 219, "r": 221},
-              {"l": 100, "s": 101, "r": 102}];
+var cursors = [{"l": 49, "r": 81},
+              {"l": 90, "r": 88},
+              {"l": 86, "r": 66},
+              {"l": 188, "r": 190},
+              {"l": 102, "r": 105}];
 var finisher = 13;
 var format;
 var seats;
@@ -31,7 +31,7 @@ function fpaint() {
     var rect = format.area_of[pid];
     var fontsize = Math.min(0.5*rect[2], 0.5*rect[3]);
     var fw = format.cursor_width;
-    fctx.font = fontsize.toString() + "px Georgia";
+    fctx.font = fontsize.toString() + "px Arial";
     fctx.fillText(pid.toString(), rect[0] + rect[2]/2, rect[1] + rect[3]/2);
     fctx.strokeStyle = teamColors[format.team_of[pid]];
     fctx.lineWidth = fw;
@@ -116,9 +116,11 @@ var pcanvas;
 var pctx;
 var scanvas;
 var sctx;
+var popcanvas;
+var popctx;
 
 function between(x, nx, ratio) {
-  return ratio*x + (1.0-ratio)*nx;
+  return (1.0-ratio)*x + ratio*nx;
 }
 function colorToStr(color) {
   return "rgb(" + color[0] + ", " + color[1] + ", " + color[2] + ")";
@@ -201,6 +203,18 @@ function paintSprites(state) {
       sctx.lineTo(cursor.x + dx3, cursor.y + dy3);
       sctx.lineTo(cursor.x + dx1, cursor.y + dy1);
       sctx.fill();
+      
+      var tipx2 = between(dx1, dx2, 0.4);
+      var tipy2 = between(dy1, dy2, 0.4);
+      var tipx3 = between(dx1, dx3, 0.4);
+      var tipy3 = between(dy1, dy3, 0.4);
+      sctx.fillStyle = colorToStr(format.color_of[cid]);
+      sctx.moveTo(cursor.x + dx1, cursor.y + dy1);
+      sctx.beginPath();
+      sctx.lineTo(cursor.x + tipx2, cursor.y + tipy2);
+      sctx.lineTo(cursor.x + tipx3, cursor.y + tipy3);
+      sctx.lineTo(cursor.x + dx1, cursor.y + dy1);
+      sctx.fill();
     }
   }
 }
@@ -209,7 +223,7 @@ function paintTime(state) {
   var timebar_h = 0.08*(canvas.height - format.canvas_size[1]);
   var timebar_w = format.canvas_size[0] * game.rounds/format.rounds;
   ctx.clearRect(0, format.canvas_size[1], format.canvas_size[0], timebar_h);
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "purple";
   ctx.beginPath();
   ctx.rect(0, format.canvas_size[1], timebar_w, timebar_h);
   ctx.fill();
@@ -231,16 +245,45 @@ function paintScores(state) {
     ctx.beginPath();
     ctx.rect(0, start_h, scorebar_w, scorebar_h);
     ctx.fill();
-    ctx.font = scorebar_h.toString() + "px Georgia";
+    ctx.font = scorebar_h.toString() + "px Arial";
     ctx.fillStyle = "black";
     ctx.fillText(game.teams[tid].score.toString(), 0, start_h + scorebar_h);
   }
 }
 function alertScores(state, nstate) {
+  // When a player finishes his or her quest, create a popup depicting
+  // how many points they scored.
   for (var pid = 0; pid < format.num_players; pid++) {
     if (nstate.players[pid].current_quest != state.players[pid].current_quest) {
       var diff = nstate.players[pid].score - state.players[pid].score;
-      
+      var duration = 20;
+      var x = format.area_of[pid][0];
+      var y = format.area_of[pid][1];
+      var maxw = format.area_of[pid][2];
+      var maxh = format.area_of[pid][3];
+      var h = 0.2 * maxh;
+      var popup = setInterval(function() {
+        popctx.clearRect(x, y, maxw, maxh);
+        if (duration > 0) {
+          popctx.globalAlpha = duration/20;
+          var sgnChar = " ";
+          popctx.fillStyle = "yellow";
+          if (diff > 0) {
+            sgnChar = "+";
+            popctx.fillStyle = "green";
+          }
+          else if (diff < 0) {
+            sgnChar = "-";
+            popctx.fillStyle = "red";
+          }
+          popctx.font = h + "px Arial";
+          popctx.fillText(sgnChar + diff.toString(), x, y + h, maxw);
+          duration -= 1;
+        }
+        else {
+          clearInterval(popup);
+        }
+      }, 50);
     }
   }
 }
@@ -282,6 +325,8 @@ $(function() {
   pctx = pcanvas.getContext("2d");
   scanvas = $("#scanvas")[0];
   sctx = scanvas.getContext("2d");
+  popcanvas = $("#popcanvas")[0];
+  popctx = popcanvas.getContext("2d");
   
   // Socket stuff.
   socket = io();

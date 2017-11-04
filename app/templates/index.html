@@ -25,7 +25,6 @@
           {% for cid in range(form.num_cursors) %}
             <span style="color:rgb({{ form.color_of(cid).r }}, {{ form.color_of(cid).g }}, {{ form.color_of(cid).b }})">Cursor {{ cid }}</span>
             <button id="l{{ cid }}" onclick="bind({{ cid }}, 'l')"></button>
-            <button id="s{{ cid }}" onclick="bind({{ cid }}, 's')"></button>
             <button id="r{{ cid }}" onclick="bind({{ cid }}, 'r')"></button>
             <br>
           {% endfor %}
@@ -42,6 +41,7 @@
       <canvas id="canvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ 1.1 * form.canvas_size[1] }}"></canvas>
       <canvas id="pcanvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ 1.1 * form.canvas_size[1] }}"></canvas>
       <canvas id="scanvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ 1.1 * form.canvas_size[1] }}"></canvas>
+      <canvas id="popcanvas" class="layer" width="{{ form.canvas_size[0] }}" height="{{ 1.1 * form.canvas_size[1] }}"></canvas>
     </div>
     <div id="secret">
       <!--This is not visible to the client, we use it to send data conveniently. -->

@@ -1,11 +1,6 @@
 import os
 from pygame import Color, Surface, Rect, image, transform
-
-def ancestor(location, x):
-  """Helper function to return the directory <x> levels above."""
-  for i in range(x):
-    location = os.path.dirname(location)
-  return location
+from .. import utility
 
 class StandardFormat:
   """
@@ -20,7 +15,7 @@ class StandardFormat:
     
     self.images = []
     for name in self.image_files:
-      location = os.path.join(ancestor(__file__, 3), "static/images", name)
+      location = os.path.join(utility.ancestor(__file__, 3), "static/images", name)
       img = transform.scale(image.load(location), (330, 220))
       self.images.append(img)
     
