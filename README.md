@@ -69,3 +69,38 @@ you can also find the scores of teams.
 To ensure the game doesn't end too early (all teams finished all
 patterns), there is a cooldown mechanic. You cannot finish a quest if
 you have finished a quest in the last few seconds.
+
+## Developer's corner
+
+### Adding a new pattern, deleting old pattern
+
+Place the image into `app/static/images/`, and modify
+the StandardFormat data structure (found in `app/main/engine/formats.py`):
+look for the attribute `image_files`, and add the name of the image
+file into the list. The position in the list determines the order in
+which the patterns are given out as quests.
+
+To delete a pattern, simple remove its filename from the `image_files`
+attribute.
+
+### Change format
+
+In the StandardFormat data structure, almost all attributes and methods
+are self-explanatory. (Their names give a reasonable description of what
+they mean and what role they play.)
+
+Aside from `image_files`, the following attributes are safe
+to change: `canvas_size`, `bg_color`, `cursor_move_speed`, `cursor_angle_speed`,
+`cursor_width`, `color_names` (colors of pens), `granularity` (overall
+pace of the game), `rounds` (length of game, in multiples of 50ms),
+`cooldown` (again in multiples of 50ms). Methods `color_of(...)`,
+`area_of(...)` and `team_of(...)` are also safe to change.
+
+When changin one of `num_cursors`, `num_players`, `num_teams`, make
+sure to change the `color_of(...)`, `area_of(...)` and `team_of(...)`
+methods to include any additional cursors/players/teams. Also ensure
+they are consistent (for example, a player belonging to a non-existent
+team is **in**consistent).
+
+All safe changes assume that the **changes made** are **reasonable**
+(not setting `canvas_size` to `(-5, -asdf)`, ...).
