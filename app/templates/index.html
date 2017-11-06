@@ -46,7 +46,7 @@
     <div id="secret">
       <!--This is not visible to the client, we use it to send data conveniently. -->
       {% for name in form.image_files %}
-        <img id="img{{ name[:-4] }}" src="/static/images/{{ name }}">
+        <img id="img{{ loop.index - 1 }}" src="/static/images/{{ name }}">
       {% endfor %}
     </div>
     <script type="text/javascript" src="/static/jquery-3.2.1.min.js"></script>

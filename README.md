@@ -15,8 +15,8 @@ to the players so they can connect. (Use port `5000`, that is, if the
 ip address is `192.168.1.106`, connect to `192.168.1.106:5000`.)
 
 When all players who want to join have joined, you can start the game
-by connecting to the secret page `avadakedavra`. (In the above example,
-you would connect to `192.168.1.106:5000/avadakedavra`.) The game will
+by connecting to the secret page `admin`. (In the above example,
+you would connect to `192.168.1.106:5000/admin`.) The game will
 then start in 3 seconds.
 
 ## Client screen
@@ -75,18 +75,18 @@ To ensure the game doesn't end too early (all teams finished all
 patterns), there is a cooldown mechanic. You cannot finish a quest if
 you have finished a quest in the last few seconds.
 
+After the game finishes, the server will save all you hard-drawn
+artworks onto the disk. Contact the administrator to get them.
+
 ## Developer's corner
 
 ### Adding a new pattern, deleting old pattern
 
-Place the image into `app/static/images/`, and modify
-the StandardFormat data structure (found in `app/main/engine/formats.py`):
-look for the attribute `image_files`, and add the name of the image
-file into the list. The position in the list determines the order in
-which the patterns are given out as quests.
+Place the image into `app/static/images/`, and modify the file
+`app/static/images/image_list.txt` appropriately. The position in the
+list determines the order in which the patterns are given out as quests.
 
-To delete a pattern, simple remove its filename from the `image_files`
-attribute.
+To delete a pattern, simple remove its filename from the file.
 
 ### Change format
 

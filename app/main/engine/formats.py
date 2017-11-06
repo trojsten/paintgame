@@ -11,12 +11,19 @@ class StandardFormat:
   
   def __init__(self):
     self.canvas_size = (1440, 720)
-    self.image_files = ["{}.bmp".format(i) for i in range(5)]
+    
+    self.image_files = []
+    img_list_location = os.path.join(utility.ancestor(__file__, 3), "static/images/image_list.txt")
+    with open(img_list_location, "r") as img_f:
+      for line in list(img_f):
+        name = line.strip()
+        if name != "":
+          self.image_files.append(name)
     
     self.images = []
     for name in self.image_files:
       location = os.path.join(utility.ancestor(__file__, 3), "static/images", name)
-      img = transform.scale(image.load(location), (330, 220))
+      img = transform.scale(image.load(location), (66, 44))
       self.images.append(img)
     
     self.bg_color = Color("white")
@@ -25,10 +32,10 @@ class StandardFormat:
     self.num_teams = 4
     self.cursor_move_speed = 0.25
     self.cursor_angle_speed = 0.05
-    self.cursor_width = 10
+    self.cursor_width = 8
     self.color_names = ["red", "green", "blue", "yellow", "black"]
     self.granularity = 10
-    self.rounds = 720
+    self.rounds = 2880
     self.cooldown = 60.0
   
   def team_of(self, player):

@@ -130,7 +130,7 @@ function clearRectList(rect) {
 }
 function drawQuest(q, rect) {
   var oldAlpha = pctx.globalAlpha;
-  pctx.globalAlpha = 0.2;
+  pctx.globalAlpha = 0.5;
   var img = $("#img" + q.toString())[0];
   // var ratio = Math.min(rect[2]/img.width, rect[3]/img.height);
   // pctx.drawImage(img, rect[0], rect[1], ratio*img.width, ratio*img.height);
@@ -255,7 +255,7 @@ function alertScores(state, nstate) {
   // how many points they scored.
   for (var pid = 0; pid < format.num_players; pid++) {
     if (nstate.players[pid].current_quest != state.players[pid].current_quest) {
-      var diff = nstate.players[pid].score - state.players[pid].score;
+      var diff = Math.round(100 * (nstate.players[pid].score - state.players[pid].score)) / 100;
       var duration = 20;
       var x = format.area_of[pid][0];
       var y = format.area_of[pid][1];

@@ -7,7 +7,7 @@ def index():
   """Where you can join, play, and spectate."""
   return render_template("index.html", form = globs.game.form)
 
-@main.route("/avadakedavra", methods = ["GET", "POST"])
+@main.route("/admin", methods = ["GET", "POST"])
 def admin():
   """
   The whole purpose of the page is to enable starting the game

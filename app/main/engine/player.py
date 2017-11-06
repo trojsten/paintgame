@@ -1,5 +1,5 @@
 import random
-from pygame import Surface
+from pygame import Surface, transform
 from .cursor import Cursor
 
 class Team:
@@ -8,14 +8,18 @@ class Team:
     self.score = 0.0
 
 def score(artwork, model, bg_color):
+  artwork = transform.scale(artwork, (artwork.get_width()//5, artwork.get_height()//5)) # Downscale to fasten this operation
   assert artwork.get_size() == model.get_size(), "Dimensions do not match"
   num = [[0, 0], [0, 0]]
   for x in range(artwork.get_width()):
     for y in range(artwork.get_height()):
-      on_bg = (1 if model.get_at((x, y)) == bg_color else 0)
-      match = (1 if artwork.get_at((x, y)) == model.get_at((x, y)) else 0)
+      model_color = model.get_at((x, y))
+      if model_color.a == 0:
+        model_color = bg_color
+      on_bg = (1 if model_color == bg_color else 0)
+      match = (1 if artwork.get_at((x, y)) == model_color else 0)
       num[on_bg][match] += 1
-  return float(num[1][1] + num[0][1]) / float(num[0][1] + num[1][0] + num[0][0] + num[1][1])
+  return 100.0 * float(num[0][1]) / float(num[0][1] + num[1][0] + num[0][0])
 
 class Player:
   """
