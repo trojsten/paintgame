@@ -22,7 +22,7 @@ var format;
 var seats;
 
 // Format paint: where is each player and what team he belongs to.
-var teamColors = ["orange", "brown", "cyan", "pink"];
+var teamColors = ["orange", "darkblue", "cyan", "pink", "forestgreen", "lightgrey"];
 function fpaint() {
   var fcanvas = $("#fcanvas")[0];
   var fctx = fcanvas.getContext("2d");
@@ -126,11 +126,12 @@ function colorToStr(color) {
   return "rgb(" + color[0] + ", " + color[1] + ", " + color[2] + ")";
 }
 function clearRectList(rect) {
+  ctx.clearRect(rect[0], rect[1], rect[2], rect[3]);
   pctx.clearRect(rect[0], rect[1], rect[2], rect[3]);
 }
 function drawQuest(q, rect) {
   var oldAlpha = pctx.globalAlpha;
-  pctx.globalAlpha = 0.5;
+  pctx.globalAlpha = 0.7;
   var img = $("#img" + q.toString())[0];
   // var ratio = Math.min(rect[2]/img.width, rect[3]/img.height);
   // pctx.drawImage(img, rect[0], rect[1], ratio*img.width, ratio*img.height);
@@ -220,7 +221,7 @@ function paintSprites(state) {
 }
 function paintTime(state) {
   // Draw the timebar (black bar in the lower part of the screen).
-  var timebar_h = 0.08*(canvas.height - format.canvas_size[1]);
+  var timebar_h = (canvas.height - format.canvas_size[1]) / (2*format.num_teams + 1);
   var timebar_w = format.canvas_size[0] * game.rounds/format.rounds;
   ctx.clearRect(0, format.canvas_size[1], format.canvas_size[0], timebar_h);
   ctx.fillStyle = "purple";
@@ -231,13 +232,13 @@ function paintTime(state) {
 function paintScores(state) {
   // Draw the scorebars.
   var extra_h = (canvas.height - format.canvas_size[1]);
-  var timebar_h = 0.08*extra_h;
-  var scorebar_h = 0.23*extra_h;
+  var timebar_h = extra_h / (2*format.num_teams + 1);
+  var scorebar_h = 2*extra_h / (2*format.num_teams + 1);
   var maxscore = 0.000000001;
   for (var tid = 0; tid < format.num_teams; tid++) {
     maxscore = Math.max(game.teams[tid].score, maxscore);
   }
-  ctx.clearRect(0, format.canvas_size[1]+timebar_h, format.canvas_size[0], 4*scorebar_h);
+  ctx.clearRect(0, format.canvas_size[1]+timebar_h, format.canvas_size[0], format.num_teams*scorebar_h);
   for (var tid = 0; tid < format.num_teams; tid++) {
     var start_h = format.canvas_size[1] + timebar_h + tid*scorebar_h;
     var scorebar_w = format.canvas_size[0] * game.teams[tid].score/maxscore;

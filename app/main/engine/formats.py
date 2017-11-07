@@ -1,4 +1,4 @@
-import os
+import os, random
 from pygame import Color, Surface, Rect, image, transform
 from .. import utility
 
@@ -29,22 +29,29 @@ class StandardFormat:
     self.bg_color = Color("white")
     self.num_players = 12
     self.num_cursors = 5
-    self.num_teams = 4
-    self.cursor_move_speed = 0.25
+    self.num_teams = 6
+    
+    # Place each player randomly.
+    self.areas = []
+    for pid in range(12):
+      r = pid // 4
+      c = pid % 4
+      self.areas.append(Rect(c * 360 + 15, r * 240 + 10, 330, 220)) 
+    random.shuffle(self.areas)
+    
+    self.cursor_move_speed = 2.5
     self.cursor_angle_speed = 0.05
     self.cursor_width = 8
     self.color_names = ["red", "green", "blue", "yellow", "black"]
-    self.granularity = 10
-    self.rounds = 2880
+    self.granularity = 1
+    self.rounds = 288
     self.cooldown = 60.0
   
   def team_of(self, player):
-    return player // 3
+    return player//2
   
   def area_of(self, player):
-    r = player // 4
-    c = player % 4
-    return Rect(c * 360 + 15, r * 240 + 10, 330, 220)
+    return self.areas[player]
   
   def color_of(self, cursor):
     return Color(self.color_names[cursor])

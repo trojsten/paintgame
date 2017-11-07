@@ -1,4 +1,6 @@
-import threading, os, json, pygame, datetime
+from __future__ import print_function
+
+import threading, os, json, pygame, datetime, sys
 from flask import session
 from flask_socketio import emit
 from . import utility
@@ -25,6 +27,30 @@ for name in os.listdir(cfg_path):
     continue
   with open(f_path, "r") as f:
     configs[name] = json.load(f)
+
+# Load team scores from previous games.
+scores_path = os.path.join(utility.ancestor(__file__, 2), "scores")
+
+def load_scores():
+  """A method that loads team scores from previous games."""
+  team_scores = {}
+  try:
+    with open(scores_path, "r") as scores_f:
+      team_scores = json.load(scores_f)
+  except IOError:
+    print("couldn't load scores, assuming it's first game", file=sys.stderr)
+  for tid in range(game.form.num_teams):
+    game.teams[tid].score = team_scores.get(str(tid), 0.0)
+
+load_scores()
+
+def save_scores():
+  """Saves the team scores to the disk, will be used in further games."""
+  team_scores = {}
+  for tid in range(game.form.num_teams):
+    team_scores[tid] = game.teams[tid].score
+  with open(scores_path, "w") as scores_f:
+    json.dump(team_scores, scores_f)
 
 """
 The game engine runs as a background thread. What follows is the
@@ -69,6 +95,8 @@ def step():
       for i in range(len(game.players[pid].artworks)):
         img_path = os.path.join(p_path, "{}.bmp".format(i))
         pygame.image.save(game.players[pid].artworks[i], img_path)
+    # Save scores to the disk.
+    save_scores()
 
 def action(pid, cid, command):
   if pid in range(game.form.num_players):

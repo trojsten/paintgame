@@ -45,7 +45,7 @@ class Player:
     
     self.score = 0.0
     self.team = game.teams[game.form.team_of(pid)]
-    self.current_quest = 0
+    self.current_quest = random.randint(0, len(game.form.images) - 1)
     self.artworks = []
     self.action = 'N' # 'N'one, quest 'D'one and move to the next quest
     self.cooldown = 0
@@ -62,8 +62,14 @@ class Player:
           points = score(artwork, model, self.game.form.bg_color)
           self.score += points
           self.team.score += points
-          # self.game.canvas.fill(self.game.form.bg_color, self.area)
-          self.current_quest += 1
+          self.game.canvas.fill(self.game.form.bg_color, self.area)
+          
+          # Must generate a DIFFERENT quest
+          nq = self.current_quest
+          while nq == self.current_quest:
+            nq = random.randint(0, len(self.game.form.images) - 1)
+          self.current_quest = nq
+          
           self.cooldown = self.game.form.cooldown
     else:
       self.cooldown -= 1.0/self.game.form.granularity
