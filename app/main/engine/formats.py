@@ -44,7 +44,7 @@ class StandardFormat:
     self.cursor_width = 8
     self.color_names = ["red", "green", "blue", "yellow", "black"]
     self.granularity = 1
-    self.rounds = 288
+    self.rounds = 2880
     self.cooldown = 60.0
   
   def team_of(self, player):

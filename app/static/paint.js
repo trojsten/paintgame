@@ -289,23 +289,78 @@ function alertScores(state, nstate) {
   }
 }
 
+var old_cursor_status = [];
+var cursor_status = [];
+var finish_quest;
+function initCursorStatus() {
+  for (var cid = 0; cid < format.num_cursors; cid++) {
+    old_cursor_status[cid] = {"l": false, "r": false};
+    cursor_status[cid] = {"l": false, "r": false};
+  }
+  finish_quest = false;
+}
 var keyAction = [];
-var pressedKeys = {};
 function setKeyBindings() {
   info("setting key bindings");
   for (var cid = 0; cid < cursors.length; cid++) {
     for (dir in cursors[cid]) {
       var key = cursors[cid][dir];
-      keyAction[key] = {"type": "cursor", "cursor": cid, "command": dir.toUpperCase()};
+      keyAction[key] = {"cursor": cid, "command": dir};
     }
   }
-  keyAction[finisher] = {"type": "finisher"};
+  function getSetCommand(val0) {
+    var val = val0;
+    return function(event) {
+      var key = event.which || event.keyCode;
+      if (keyAction[key]) {
+        var cid = keyAction[key].cursor;
+        var command = keyAction[key].command;
+        cursor_status[cid][command] = val;
+      }
+    }
+  }
+  $(window).on("keydown", getSetCommand(true));
+  $(window).on("keyup", getSetCommand(false));
   $(window).on("keydown", function(event) {
-    pressedKeys[event.which || event.keyCode] = true;
+    if ((event.which || event.keyCode) == finisher) {
+      finish_quest = true;
+    }
   });
-  $(window).on("keyup", function(event) {
-    delete pressedKeys[event.which || event.keyCode];
-  });
+}
+function getCursorAction(l, r) {
+  if (l && !r) {
+    return 'L';
+  }
+  if (!l && r) {
+    return 'R';
+  }
+  return 'N';
+}
+function genActions() {
+  var actions = {};
+  if (finish_quest) {
+    actions["finish"] = true;
+    finish_quest = false;
+  }
+  for (var cid = 0; cid < format.num_cursors; cid++) {
+    var ol = old_cursor_status[cid].l;
+    var or = old_cursor_status[cid].r;
+    var nl = cursor_status[cid].l;
+    var nr = cursor_status[cid].r;
+    
+    // Set old to new.
+    old_cursor_status[cid].l = nl;
+    old_cursor_status[cid].r = nr;
+    
+    // Check for changes in cursor movement.
+    var oact = getCursorAction(ol, or);
+    var nact = getCursorAction(nl, nr);
+    if (oact == nact) {
+      continue;
+    }
+    actions[cid] = nact;
+  }
+  return actions;
 }
 
 $(function() {
@@ -382,6 +437,7 @@ $(function() {
   // Lobby event: game start
   socket.on("get_ready", function(data) {
     info("starting the game");
+    initCursorStatus();
     socket.on("update", function(data) {
       var nstate = JSON.parse(data);
       paint(game, nstate);
@@ -390,11 +446,10 @@ $(function() {
       alertScores(game, nstate);
       paintSprites(nstate);
       game = nstate;
-      for (key in pressedKeys) {
-        var action = keyAction[key];
-        if (action) {
-          socket.emit("action", action);
-        }
+      
+      var actions = genActions();
+      if (Object.keys(actions).length > 0) {
+        socket.emit("actions", actions);
       }
     });
     var updates = [];

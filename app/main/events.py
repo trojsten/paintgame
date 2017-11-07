@@ -81,14 +81,16 @@ def load_cfg(name):
 
 
 
-@socketio.on("action", namespace = "/")
-def action(data):
+@socketio.on("actions", namespace = "/")
+def actions(data):
   pid = session.get("player")
   if pid not in range(globs.game.form.num_players):
     return
-  if data.get("type") == "cursor":
-    cid = data.get("cursor")
-    command = data.get("command")
-    globs.action(pid, cid, command)
-  else:
-    globs.finish(pid)
+  for key in data:
+    if key == "finish":
+      globs.finish(pid)
+      continue
+    if not key.isdigit():
+      continue
+    cid = int(key)
+    globs.action(pid, cid, data[key])
