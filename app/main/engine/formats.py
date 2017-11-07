@@ -28,8 +28,8 @@ class StandardFormat:
     
     self.bg_color = Color("white")
     self.num_players = 12
-    self.num_cursors = 5
-    self.num_teams = 6
+    self.num_cursors = 6
+    self.num_teams = 4
     
     # Place each player randomly.
     self.areas = []
@@ -48,10 +48,12 @@ class StandardFormat:
     self.cooldown = 60.0
   
   def team_of(self, player):
-    return player//2
+    return player//3
   
   def area_of(self, player):
     return self.areas[player]
   
   def color_of(self, cursor):
-    return Color(self.color_names[cursor])
+    if cursor in range(len(self.color_names)):
+      return Color(self.color_names[cursor])
+    return Color("white")
