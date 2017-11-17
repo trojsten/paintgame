@@ -16,8 +16,7 @@ var cursors = [{"l": 49, "r": 81},
               {"l": 90, "r": 88},
               {"l": 86, "r": 66},
               {"l": 188, "r": 190},
-              {"l": 102, "r": 105},
-              {"l": 37, "r": 39}];
+              {"l": 102, "r": 105}];
 var finisher = 13;
 var format;
 var seats;
@@ -95,14 +94,6 @@ function bind_finish() {
     refreshFinishButt();
     $(window).off("keydown");
   });
-}
-function refreshButts() {
-  for (var cid = 0; cid < format.num_cursors; cid++) {
-    for (type in dirToWord) {
-      refreshCursorButt(cid, type);
-    }
-  }
-  refreshFinishButt();
 }
 function save_cfg() {
   info("requesting save cfg");
@@ -197,16 +188,23 @@ function paintSprites(state) {
   // with colors corresponding to the owner's team and the cursor's color.
   sctx.clearRect(0, 0, scanvas.width, scanvas.height);
   for (var pid = 0; pid < format.num_players; pid++) {
+    var scale = 1;
+    if (player == pid) {
+       scale = scale * 3;
+    }
     for (var cid = 0; cid < format.num_cursors; cid++) {
       var cursor = state.players[pid].cursors[cid];
       var unit = format.cursor_width;
       var dx1 = 1.5 * unit * Math.cos(cursor.direction * 2 * Math.PI);
       var dy1 = 1.5 * unit * Math.sin(cursor.direction * 2 * Math.PI);
-      var dx2 = 0.75 * unit * Math.cos((cursor.direction + 1/3) * 2 * Math.PI);
-      var dy2 = 0.75 * unit * Math.sin((cursor.direction + 1/3) * 2 * Math.PI);
-      var dx3 = 0.75 * unit * Math.cos((cursor.direction + 2/3) * 2 * Math.PI);
-      var dy3 = 0.75 * unit * Math.sin((cursor.direction + 2/3) * 2 * Math.PI);
+      var dx2 = scale * 0.75 * unit * Math.cos((cursor.direction + 1/4) * 2 * Math.PI);
+      var dy2 = scale * 0.75 * unit * Math.sin((cursor.direction + 1/4) * 2 * Math.PI);
+      var dx3 = scale * 0.75 * unit * Math.cos((cursor.direction + 3/4) * 2 * Math.PI);
+      var dy3 = scale * 0.75 * unit * Math.sin((cursor.direction + 3/4) * 2 * Math.PI);
       sctx.fillStyle = teamColors[format.team_of[pid]];
+      if (player == pid) {
+      	sctx.fillStyle = '#' + Math.random().toString(16).substr(-6);
+      }
       sctx.moveTo(cursor.x + dx1, cursor.y + dy1);
       sctx.beginPath();
       sctx.lineTo(cursor.x + dx2, cursor.y + dy2);
@@ -237,6 +235,9 @@ function paintTime(state) {
   ctx.beginPath();
   ctx.rect(0, format.canvas_size[1], timebar_w, timebar_h);
   ctx.fill();
+  ctx.fillStyle = "red";
+  ctx.font = (timebar_h - 2).toString() + "px Arial";
+  ctx.fillText(game.rounds.toString(), 50, format.canvas_size[1] + timebar_h - 5);
 }
 function paintScores(state) {
   // Draw the scorebars.
@@ -255,9 +256,9 @@ function paintScores(state) {
     ctx.beginPath();
     ctx.rect(0, start_h, scorebar_w, scorebar_h);
     ctx.fill();
-    ctx.font = scorebar_h.toString() + "px Arial";
+    ctx.font = (scorebar_h - 4).toString() + "px Arial";
     ctx.fillStyle = "black";
-    ctx.fillText(game.teams[tid].score.toString(), 0, start_h + scorebar_h);
+    ctx.fillText(game.teams[tid].score.toFixed(4), 0, start_h + scorebar_h - 2);
   }
 }
 function alertScores(state, nstate) {
@@ -311,7 +312,7 @@ function initCursorStatus() {
 var keyAction = [];
 function setKeyBindings() {
   info("setting key bindings");
-  for (var cid = 0; cid < format.num_cursors; cid++) {
+  for (var cid = 0; cid < cursors.length; cid++) {
     for (dir in cursors[cid]) {
       var key = cursors[cid][dir];
       keyAction[key] = {"cursor": cid, "command": dir};
@@ -375,6 +376,14 @@ function genActions() {
 $(function() {
   info("done loading page, gonna do some javascript");
   
+  // Visual stuff: set names for control buttons.
+  for (var cid = 0; cid < cursors.length; cid++) {
+    for (type in dirToWord) {
+      refreshCursorButt(cid, type);
+    }
+  }
+  refreshFinishButt();
+  
   // Initialize canvas variables.
   canvas = $("#canvas")[0];
   ctx = canvas.getContext("2d");
@@ -394,7 +403,6 @@ $(function() {
     info("got a welcome from server");
     format = JSON.parse(data.format);
     fpaint();
-    refreshButts();
     seats = JSON.parse(data.seats);
     for (var i = 0; i < seats.length; i++) {
       if (seats[i]) {
@@ -428,8 +436,13 @@ $(function() {
   socket.on("cfg", function(data) {
     info("Successfully loaded config.");
     cursors = data.cursors;
+    for (var cid = 0; cid < cursors.length; cid++) {
+      for (type in cursors[cid]) {
+        refreshCursorButt(cid, type);
+      }
+    }
     finisher = data.finisher;
-    refreshButts();
+    refreshFinishButt();
   });
   // Lobby event: game start
   socket.on("get_ready", function(data) {
